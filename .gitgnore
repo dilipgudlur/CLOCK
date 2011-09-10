@@ -1,0 +1,6 @@
+j2meclasses/
+build.properties
+build/
+build.xml
+README.txt
+suite/
