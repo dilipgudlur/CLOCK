@@ -19,7 +19,6 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  **/
-
 package org.sunspotworld.demo;
 
 //import com.sun.cldc.jna.Spot;
@@ -29,10 +28,17 @@ import com.sun.spot.resources.transducers.SwitchEvent;
 import com.sun.spot.service.BootloaderListenerService;
 import java.util.Calendar;
 import javax.microedition.midlet.MIDletStateChangeException;
-import com.sun.spot.peripheral.*;
+import com.sun.spot.peripheral.radio.RadioFactory;
 import com.sun.spot.resources.transducers.ISwitch;
 import com.sun.spot.resources.transducers.ISwitchListener;
+import com.sun.spot.resources.transducers.LEDColor;
 import com.sun.spot.sensorboard.EDemoBoard;
+import com.sun.spot.util.IEEEAddress;
+import java.io.IOException;
+import java.io.OutputStream;
+import javax.microedition.io.Connector;
+import javax.microedition.io.HttpConnection;
+
 /**
  * Clock Demo
  *
@@ -42,48 +48,52 @@ import com.sun.spot.sensorboard.EDemoBoard;
  *
  * @author roger (modifications by vipul)
  */
-
 public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwitchListener {
-    Clock disp = new Clock();
+
+    private static final int INACTIVE = 0;
+    private static final int PRESSED = 1;
+    private static final int RELEASED = 2;
+    private static int postMsgStatus = INACTIVE;
+    Clock disp;
+    ISwitch SW0, SW1;
+
     protected void startApp() throws MIDletStateChangeException {
         BootloaderListenerService.getInstance().start();       // Listen for downloads/commands over USB connection
         System.out.println("StartApp");
-        
 
-        ISwitch SW0      = EDemoBoard.getInstance().getSwitches()[0];
-        ISwitch SW1      = EDemoBoard.getInstance().getSwitches()[1];
+        disp = new Clock();
+        SW0 = EDemoBoard.getInstance().getSwitches()[0];
+        SW1 = EDemoBoard.getInstance().getSwitches()[1];
 
         //IAT91_TC timer   = (IAT91_TC)Spot.getInstance().getAT91_TC(4);
-        
+
         boolean switch0Status = false;
         boolean switch1Status = false;
-        
+
         SW0.addISwitchListener(this);
         SW1.addISwitchListener(this);
         // Main loop of the application
         while (true) {
-           if(SW0.isOpen() && SW1.isOpen()){
-            showTime();
-        }         
-        else {
-            //Spot.getInstance().getPowerController().setTime(0);
-            //disp.setColor(255, 0, 0);
-            //disp.scroll("SET", 1);
-            showResetTime();
+            if (SW0.isOpen() && SW1.isOpen()) {
+                showTime();
+            } else {
+                //Spot.getInstance().getPowerController().setTime(0);
+                //disp.setColor(255, 0, 0);
+                //disp.scroll("SET", 1);
+                showResetTime();
 
-            /*disp.setColor(0, 255, 0);
-            disp.swingThis("P", 3);
-            disp.setColor(0, 0, 255);
-            disp.swingThis("O", 3);
-            disp.setColor(0, 255, 0);
-            disp.swingThis("T", 3);*/
+                /*disp.setColor(0, 255, 0);
+                disp.swingThis("P", 3);
+                disp.setColor(0, 0, 255);
+                disp.swingThis("O", 3);
+                disp.setColor(0, 255, 0);
+                disp.swingThis("T", 3);*/
             }
-      
+
         }
     }
 
-    public void showResetTime()
-    {
+    public void showResetTime() {
         disp.setColor(255, 0, 0);
         disp.swingThis(Integer.toString(resetHour()), 12);
         disp.setColor(0, 0, 255);
@@ -91,8 +101,8 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
         disp.setColor(255, 0, 0);
         disp.swingThis(Integer.toString(resetSecond()), 12);
     }
-    public void showTime()
-    {
+
+    public void showTime() {
         disp.setColor(255, 0, 0);
         disp.swingThis(Integer.toString(getHour()), 12);
         disp.setColor(0, 0, 255);
@@ -102,60 +112,60 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
         disp.setColor(0, 255, 0);
         disp.swingThis(getAM_PM(), 12);
     }
-    public int resetHour()
-    {
+
+    public int resetHour() {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 0);
         int hour = Calendar.HOUR_OF_DAY;
         return hour;
     }
-   
-    public int resetMinute(){
-      Calendar cal = Calendar.getInstance();
-      cal.set(Calendar.MINUTE, 0);
-      int minute = cal.get(Calendar.MINUTE);
-      return minute;
+
+    public int resetMinute() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MINUTE, 0);
+        int minute = cal.get(Calendar.MINUTE);
+        return minute;
     }
 
-    public int resetSecond()
-    {
+    public int resetSecond() {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.SECOND, 0);
         int second = Calendar.SECOND;
         return second;
     }
 
-  public int getHour(){
-      Calendar calendar = Calendar.getInstance();
-      int hour = calendar.get(Calendar.HOUR);
-      return hour;
-  }
+    public int getHour() {
+        Calendar calendar = Calendar.getInstance();
+        int hour = calendar.get(Calendar.HOUR);
+        return hour;
+    }
 
-  public int getMinute(){
-      Calendar calendar = Calendar.getInstance();
-      int minute = calendar.get(Calendar.MINUTE);
-      return minute;
-  }
+    public int getMinute() {
+        Calendar calendar = Calendar.getInstance();
+        int minute = calendar.get(Calendar.MINUTE);
+        return minute;
+    }
 
- public int getSecond(){
-      Calendar calendar = Calendar.getInstance();
-      int second = calendar.get(Calendar.SECOND);
-      return second;
-  }
+    public int getSecond() {
+        Calendar calendar = Calendar.getInstance();
+        int second = calendar.get(Calendar.SECOND);
+        return second;
+    }
 
-  public String getAM_PM(){
-      Calendar calendar = Calendar.getInstance();
-      String am_pm;
-      if(calendar.get(Calendar.AM_PM) == 0)
-      am_pm = "AM";
-      else
-      am_pm = "PM";
-      return am_pm;
-  }
+    public String getAM_PM() {
+        Calendar calendar = Calendar.getInstance();
+        String am_pm;
+        if (calendar.get(Calendar.AM_PM) == 0) {
+            am_pm = "AM";
+        } else {
+            am_pm = "PM";
+        }
+        return am_pm;
+    }
 
     protected void pauseApp() {
     }
-    
+
     /**
      * Called if the MIDlet is terminated by the system.
      * I.e. if startApp throws any exception other than MIDletStateChangeException,
@@ -175,9 +185,68 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
     }
 
     public void switchPressed(SwitchEvent evt) {
-
+        if (evt.getSwitch().equals(SW1)) {
+            if (postMsgStatus == INACTIVE) {
+                postMsgStatus = PRESSED;
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+                if (postMsgStatus == PRESSED) {
+                    long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
+                    String postURL = getAppProperty("POST-URL");
+                    String msg = IEEEAddress.toDottedHex(ourAddr) + " Achieving world peace ";
+         
+                    postMessage(postURL, msg);
+                    postMsgStatus = INACTIVE;
+                }
+            }
+        }
     }
 
     public void switchReleased(SwitchEvent evt) {
+        if (evt.getSwitch().equals(SW1)) {
+            if (postMsgStatus == PRESSED) {
+                postMsgStatus = RELEASED;
+            }
+        }
+    }
+
+    public static void postMessage(String postURL, String msg) {
+        HttpConnection conn = null;
+        OutputStream out = null;
+        String resp = null;
+
+        System.out.println("Posting: <" + msg + "> to " + postURL);
+
+        try {
+            conn = (HttpConnection) Connector.open(postURL);
+            conn.setRequestMethod(HttpConnection.POST);
+            conn.setRequestProperty("Connection", "close");
+       /*     conn.setRequestProperty("token", "4e826530-6ff2-48a7-8cd3-75b98ff0d7fd");*/
+            conn.setRequestProperty("content-type", "text/plain");
+            /*conn.setRequestProperty("data", "Checking posting to twitter: Divya");*/
+            out = conn.openOutputStream();
+            out.write((msg + "'\n").getBytes());
+            out.flush();
+        } catch (Exception ex) {
+            resp = ex.getMessage();
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (IOException ex) {
+                resp = ex.getMessage();
+            }
+        }
+        System.out.flush();
+        ITriColorLEDArray leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
+        leds.setColor(LEDColor.YELLOW);
+        leds.setOn();
     }
 }
