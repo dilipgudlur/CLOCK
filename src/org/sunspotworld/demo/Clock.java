@@ -99,8 +99,9 @@ public class Clock implements TimerCounterBits{
      * @param blue non-zero if you want the LEDs to display blue
      */
     public void setColor( int red, int green, int blue ){
-        LED.setOff();
+        LED.setOn();
         LED.setRGB((red==0)?0:255,(green==0)?0:255,(blue==0)?0:255);
+        
     }
     
     /**
@@ -119,6 +120,7 @@ public class Clock implements TimerCounterBits{
             while ( i < count ) {
                 // wait for motion
                 double acceleration = accelerometer.getAccelY();
+                //accelerometer.
                 // System.out.println("accelerometer =" + acceleration + 
                 // " range = " + range );
                 if ( acceleration > threshold ){
@@ -149,7 +151,32 @@ public class Clock implements TimerCounterBits{
             ex.printStackTrace();
         }
     }
-    
+
+    public boolean accelZ()
+    {
+        IAccelerometer3D accelerometer1 = (IAccelerometer3D) Resources.lookup(IAccelerometer3D.class );
+        double acceleration = 0;
+        int tilt = 0;
+        try{
+            acceleration = accelerometer1.getAccelZ();
+            tilt = (int)Math.toDegrees(accelerometer1.getTiltZ());
+            System.out.println("ACC="+acceleration);
+            System.out.println("Tilt="+tilt);
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        if(acceleration > 3.0 && tilt > 60)
+        {
+            System.out.println("sufficient z accel");
+            return true;
+            
+        }
+        else
+            return false;
+    }
+
+
     /**
      * Display string in a left to right swinging pattern
      * (i.e. forward)
@@ -202,7 +229,10 @@ public class Clock implements TimerCounterBits{
         try {
             dots = font.getChar(character);
             for ( int i = dots.length-1; i >= 0; i-- ) {
+                try{
                 LED.setOn( dots[i] );
+                }catch(ArrayIndexOutOfBoundsException e)
+                {e.printStackTrace();}
                 // System.out.print(character);
                 Thread.sleep(1);
             }
