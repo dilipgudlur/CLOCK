@@ -40,7 +40,7 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
     private static final int PRESSED = 1;
     private static final int RELEASED = 2;
     private static int postMsgStatus = INACTIVE;
-    
+
     protected void startApp() throws MIDletStateChangeException {
         BootloaderListenerService.getInstance().start();       // Listen for downloads/commands over USB connection
         System.out.println("StartApp");
@@ -51,7 +51,7 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
         SW1.addISwitchListener(this);
         hod  = cal.get(Calendar.HOUR_OF_DAY);
         minute = cal.get(Calendar.MINUTE);
-        showCurrentTime();        
+        showCurrentTime();
     }
 
     public void showCurrentTime()
@@ -87,7 +87,7 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
         System.out.println(cal1.get(Calendar.HOUR_OF_DAY));
         System.out.println(cal1.get(Calendar.MINUTE));
         System.out.println(cal1.get(Calendar.SECOND));
-        
+
         disp.setColor(255, 0, 0);
         disp.swingThis(Integer.toString(cal1.get(Calendar.HOUR_OF_DAY)), 12);
         disp.setColor(0, 255, 0);
@@ -102,7 +102,7 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
             setTimeMode();               //we are in set time mode //set new time
         }*/
     }
-  
+
     protected void pauseApp() {
     }
     protected void destroyApp(boolean unconditional) throws MIDletStateChangeException {
@@ -111,7 +111,7 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
     }
 
     public void switchPressed(SwitchEvent evt) {
-       
+
         if(evt.getSwitch().equals(SW0)){ //check condition...switchPressedFlag may not get true
             System.out.println("in switch pressed");
             start = System.currentTimeMillis();
@@ -178,7 +178,7 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
         cal.set(Calendar.HOUR_OF_DAY, hod);
         cal.set(Calendar.MINUTE, minute);
         while(SW1.isOpen()) //press both SW0 and SW1 together to exit this while loop
-        {           
+        {
             if(SW0.isOpen())
                 SW0.waitForChange();
             SW0.waitForChange();
@@ -188,7 +188,7 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
         SW1.waitForChange();
         System.out.println("reach this stage");
         while(SW1.isOpen())
-        {   
+        {
           System.out.println("inside minute change");
           if(SW0.isOpen())
                 SW0.waitForChange();
@@ -201,7 +201,7 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
         changeHourFlag = false;
         disp.setColor(0,255,0);
         Utils.sleep(3000);
-        
+
         showCurrentTime();
     }
 
@@ -275,7 +275,7 @@ public class ClockDemo extends javax.microedition.midlet.MIDlet implements ISwit
         //disp.swingThis(Integer.toString(resetSecond()), 12);
     }
 
-    
+
     public int resetSecond()
     {
         Calendar cal = Calendar.getInstance();
